@@ -126,6 +126,11 @@ class Pipe:
         b_point = bird_mask.overlap(bottom_mask, bottom_offset)
         t_point = bird_mask.overlap(top_mask, top_offset)
 
+        if t_point or b_point:
+            return True
+
+        return False
+
 
 def draw_window(win, bird):
     win.blit(BG_IMG, (0, 0))
