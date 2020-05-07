@@ -71,3 +71,13 @@ class Bird:
         elif self.img_count == self.ANIMATION_TIME*4 + 1:
             self.img = self.IMGS[0]
             self.img_count = 0
+
+        if self.tilt <= -80:
+            self.img = self.IMGS[1]
+            self.img_count = self.ANIMATION_TIME*2
+
+        rotated_img = pygame.transform.rotate(self.img, self.tilt)
+        new_rect = rotated_img.get_rect(
+            center=self.img.get_rect(topleft=(self.x, self.y)).center)
+
+        win.blit(rotated_img, new_rect.topleft)
