@@ -23,7 +23,7 @@ STAT_FONT = pygame.font.SysFont('comicsans', 50)
 class Bird:
     IMGS = BIRD_IMGS
     MAX_ROTATION = 25
-    ROT_VOL = 20
+    ROT_VEL = 20
     ANIMATION_TIME = 5
 
     def __init__(self, x, y):
@@ -44,21 +44,23 @@ class Bird:
     def move(self):
         self.tick_count += 1
 
-        d = self.vel * self.tick_count + 1.5 * self.tick_count**2
+        displacement = self.vel*(self.tick_count) + 0.5 * \
+            (3)*(self.tick_count)**2
 
-        if d >= 16:
-            d = 16
-        if d < 0:
-            d -= 2
+        if displacement >= 16:
+            displacement = (displacement/abs(displacement)) * 16
 
-        self.y = self.y + d
+        if displacement < 0:
+            displacement -= 2
 
-        if d < 0 or self.y < self.height + 50:
+        self.y = self.y + displacement
+
+        if displacement < 0 or self.y < self.height + 50:
             if self.tilt < self.MAX_ROTATION:
                 self.tilt = self.MAX_ROTATION
         else:
             if self.tilt > -90:
-                self.tilt -= self.ROT_VOL
+                self.tilt -= self.ROT_VEL
 
     def draw(self, win):
         self.img_count += 1
@@ -182,7 +184,7 @@ def main(genomes, config):
 
     for _, g in genomes:
         net = neat.nn.FeedForwardNetwork.create(g, config)
-        net.append(net)
+        nets.append(net)
         birds.append(Bird(230, 350))
         g.fitness = 0
         ge.append(g)
@@ -195,7 +197,6 @@ def main(genomes, config):
     score = 0
 
     run = True
-
     while run:
         clock.tick(30)
         for event in pygame.event.get():
@@ -206,7 +207,7 @@ def main(genomes, config):
 
         pipe_ind = 0
         if len(birds) > 0:
-            if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_BOTTOM.get_width():
+            if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():
                 pipe_ind = 1
         else:
             run = False
@@ -220,14 +221,14 @@ def main(genomes, config):
                 bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
 
             if output[0] > 0.5:
-                bird.jump
+                bird.jump()
 
         add_pipe = False
         rem = []
         for pipe in pipes:
             for x, bird in enumerate(birds):
                 if pipe.collide(bird):
-                    ge[x].fitness -= 1
+                    # ge[x].fitness -= 1
                     birds.pop(x)
                     nets.pop(x)
                     ge.pop(x)
@@ -244,8 +245,8 @@ def main(genomes, config):
         if add_pipe:
             score += 1
             for g in ge:
-                g.fintess += 5
-            pipes.append(Pipe(700))
+                g.fitness += 5
+            pipes.append(Pipe(600))
 
         for r in rem:
             pipes.remove(r)
@@ -254,13 +255,10 @@ def main(genomes, config):
             if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
                 birds.pop(x)
                 nets.pop(x)
-                ge.pops(x)
+                ge.pop(x)
 
         base.move()
         draw_window(win, birds, pipes, base, score)
-
-
-main()
 
 
 def run(config_path):
@@ -276,7 +274,7 @@ def run(config_path):
     winner = p.run(main, 50)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, "configFile.txt ")
+    config_path = os.path.join(local_dir, 'config-file.txt')
     run(config_path)
